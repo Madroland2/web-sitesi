@@ -1,0 +1,23 @@
+services:
+  web:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=file:/app/dev.db
+      - SESSION_SECRET=${SESSION_SECRET}
+      - ADMIN_PASSWORD_HASH=${ADMIN_PASSWORD_HASH}
+      # Alpine imajında OpenSSL 3 var; Prisma sürümü tespit edemeyip
+      # openssl-1.1.x motoruna düşüyor ve yüklenemiyor. Doğru motoru gösteriyoruz.
+      - PRISMA_QUERY_ENGINE_LIBRARY=/app/node_modules/.prisma/client/libquery_engine-linux-musl-arm64-openssl-3.0.x.so.node
+      # macOS'ta hot-reload için polling gerekli
+      - WATCHPACK_POLLING=true
+      - CHOKIDAR_USEPOLLING=true
+    volumes:
+      # Kaynak kodları canlı mount et (hot-reload)
+      - .:/app
+      # node_modules ve .next izole tut (macOS/Linux uyumsuzluğu önlenir)
+      - /app/node_modules
+      - /app/.next
+    command: npx next dev --webpack -H 0.0.0.0
+    restart: unless-stopped

@@ -1,0 +1,305 @@
+@import "tailwindcss";
+
+/* ── Renk paleti ── */
+@theme {
+  --color-bg: #0d1117;
+  --color-surface: #161b22;
+  --color-border: #30363d;
+  --color-accent: #58a6ff;
+  --color-danger: #f85149;
+  --color-success: #3fb950;
+  --color-text: #e6edf3;
+  --color-muted: #8b949e;
+
+  /* Edebiyat bölümü — sıcak mürekkep tonları */
+  --color-ink: #e9e2d4;      /* okuma metni, kâğıt beyazı */
+  --color-ink-soft: #a89e8c; /* ikincil metin */
+  --color-gilt: #d4a24c;     /* yaldız vurgu */
+  --color-rule: #3a332a;     /* ince ayırıcı çizgi */
+
+  --font-sans: var(--font-geist-sans), system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), monospace;
+  --font-serif: var(--font-lora), Georgia, "Times New Roman", serif;
+}
+
+/* ── Temel ── */
+html {
+  color-scheme: dark;
+}
+
+body {
+  background-color: #0d1117;
+  color: #e6edf3;
+  font-family: var(--font-sans);
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Dokunmatik gecikmeyi kaldır */
+a,
+button {
+  touch-action: manipulation;
+}
+
+/* ── Odak halkası — klavye kullanıcıları için ── */
+:focus-visible {
+  outline: 2px solid #d4a24c;
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* ── İçeriğe atla bağlantısı ── */
+.atla-baglantisi {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+  background-color: #d4a24c;
+  color: #0d1117;
+  padding: 0.6rem 1rem;
+  border-radius: 0 0 0.5rem 0;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+.atla-baglantisi:focus {
+  left: 0;
+}
+
+/* ── Geçiş efektleri (transition: all kullanılmıyor) ── */
+a,
+button,
+.kart,
+.yazi-girdisi {
+  transition-property: color, background-color, border-color, opacity;
+  transition-duration: 160ms;
+  transition-timing-function: ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ── Özel scrollbar ── */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0d1117;
+}
+::-webkit-scrollbar-thumb {
+  background: #30363d;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #8b949e;
+}
+
+/* ══════════════════════════════════════════════
+   EDEBİYAT BÖLÜMÜ
+   ══════════════════════════════════════════════ */
+
+/* Dergi başlığı */
+.dergi-basligi {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+/* Küçük kapitel meta etiketi */
+.meta-etiket {
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #a89e8c;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Yazı listesi girdisi */
+.yazi-girdisi {
+  border-top: 1px solid #3a332a;
+}
+.yazi-girdisi:hover .yazi-basligi {
+  color: #d4a24c;
+}
+
+.yazi-basligi {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  color: #e9e2d4;
+  text-wrap: balance;
+}
+
+/* Süsleme — bölüm ayırıcı */
+.suslu-ayirici {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  color: #3a332a;
+}
+.suslu-ayirici::before,
+.suslu-ayirici::after {
+  content: "";
+  height: 1px;
+  flex: 1;
+  background: linear-gradient(to right, transparent, #3a332a, transparent);
+}
+
+/* ── Okuma görünümü ── */
+.okuma {
+  font-family: var(--font-serif);
+  font-size: 1.1875rem;   /* 19px */
+  line-height: 1.8;
+  color: #e9e2d4;
+  max-width: 68ch;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+.okuma p {
+  margin-block: 1.35em;
+}
+
+/* İlk paragrafa gömme harf */
+.okuma > p:first-of-type::first-letter {
+  float: left;
+  font-size: 3.6em;
+  line-height: 0.82;
+  padding-right: 0.09em;
+  margin-top: 0.06em;
+  color: #d4a24c;
+  font-weight: 600;
+}
+
+.okuma h2,
+.okuma h3 {
+  font-family: var(--font-serif);
+  color: #e9e2d4;
+  margin-block: 1.9em 0.65em;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+.okuma h2 {
+  font-size: 1.45em;
+}
+.okuma h3 {
+  font-size: 1.2em;
+}
+
+.okuma blockquote {
+  margin-block: 1.7em;
+  padding-left: 1.4em;
+  border-left: 2px solid #d4a24c;
+  color: #a89e8c;
+  font-style: italic;
+}
+
+.okuma a {
+  color: #d4a24c;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  text-decoration-thickness: 1px;
+}
+.okuma a:hover {
+  color: #e6bc72;
+}
+
+.okuma strong {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.okuma em {
+  font-style: italic;
+}
+
+.okuma ul,
+.okuma ol {
+  margin-block: 1.35em;
+  padding-left: 1.5em;
+}
+.okuma li {
+  margin-block: 0.5em;
+}
+.okuma ul li {
+  list-style: disc;
+}
+.okuma ol li {
+  list-style: decimal;
+}
+
+.okuma hr {
+  margin-block: 2.5em;
+  border: 0;
+  height: 1px;
+  background: linear-gradient(to right, transparent, #3a332a, transparent);
+}
+
+/* Başlık çapaları için üst boşluk */
+.okuma h2,
+.okuma h3 {
+  scroll-margin-top: 5rem;
+}
+
+/* ── Yardımcı sınıflar ── */
+.kart {
+  background-color: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 0.75rem;
+}
+.kart:hover {
+  border-color: #58a6ff;
+}
+
+.dugme-birincil {
+  background-color: #58a6ff;
+  color: #0d1117;
+  padding: 0.5rem 1.25rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.dugme-birincil:hover {
+  background-color: #79b8ff;
+}
+
+.dugme-ikincil {
+  background-color: transparent;
+  color: #e6edf3;
+  border: 1px solid #30363d;
+  padding: 0.5rem 1.25rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+}
+.dugme-ikincil:hover {
+  border-color: #58a6ff;
+  color: #58a6ff;
+}
+
+.giris-alani {
+  width: 100%;
+  background-color: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 0.5rem;
+  padding: 0.625rem 0.875rem;
+  color: #e6edf3;
+  font-size: 0.9rem;
+}
+.giris-alani:focus {
+  outline: none;
+  border-color: #58a6ff;
+  box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
+}
+.giris-alani::placeholder {
+  color: #8b949e;
+}

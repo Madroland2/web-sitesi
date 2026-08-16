@@ -1,0 +1,23 @@
+generator client {
+  provider = "prisma-client-js"
+  // Docker imajı Alpine + OpenSSL 3 kullanıyor; varsayılan openssl-1.1.x
+  // motoru yüklenemediği için hedef açıkça belirtiliyor.
+  binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Post {
+  id          Int      @id @default(autoincrement())
+  baslik      String
+  slug        String   @unique
+  ozet        String
+  icerik      String
+  kapakGorsel String?
+  yayinda     Boolean  @default(false)
+  olusturuldu DateTime @default(now())
+  guncellendi DateTime @updatedAt
+}
