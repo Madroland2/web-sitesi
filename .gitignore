@@ -46,3 +46,9 @@ next-env.d.ts
 *.db
 *.db-journal
 prisma/*.db
+
+# örnek ortam dosyası izlensin
+!.env.example
+
+# SQLite dönemine ait eski migration arşivi
+prisma/_migrations_sqlite_eski/

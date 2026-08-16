@@ -1,15 +1,37 @@
 services:
+  db:
+    image: postgres:16-alpine
+    container_name: web-sitesi-db
+    environment:
+      POSTGRES_USER: blog
+      POSTGRES_PASSWORD: blog
+      POSTGRES_DB: blog
+    ports:
+      # Host tarafında 5433 — 5432 başka projede kullanımda
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U blog -d blog"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
   web:
     build: .
+    depends_on:
+      db:
+        condition: service_healthy
     ports:
       - "3000:3000"
+    # SESSION_SECRET ve ADMIN_PASSWORD_HASH buradan okunur.
+    # (compose yalnız .env dosyasını değişken ikamesi için okur, .env.local'i okumaz)
+    env_file:
+      - .env.local
     environment:
-      - DATABASE_URL=file:/app/dev.db
-      - SESSION_SECRET=${SESSION_SECRET}
-      - ADMIN_PASSWORD_HASH=${ADMIN_PASSWORD_HASH}
-      # Alpine imajında OpenSSL 3 var; Prisma sürümü tespit edemeyip
-      # openssl-1.1.x motoruna düşüyor ve yüklenemiyor. Doğru motoru gösteriyoruz.
-      - PRISMA_QUERY_ENGINE_LIBRARY=/app/node_modules/.prisma/client/libquery_engine-linux-musl-arm64-openssl-3.0.x.so.node
+      # env_file'dan sonra gelir, onu ezer — veritabanı adresi compose'a ait
+      - DATABASE_URL=postgresql://blog:blog@db:5432/blog?schema=public
       # macOS'ta hot-reload için polling gerekli
       - WATCHPACK_POLLING=true
       - CHOKIDAR_USEPOLLING=true
@@ -19,5 +41,8 @@ services:
       # node_modules ve .next izole tut (macOS/Linux uyumsuzluğu önlenir)
       - /app/node_modules
       - /app/.next
-    command: npx next dev --webpack -H 0.0.0.0
+    command: sh -c "npx prisma migrate deploy && npx next dev --webpack -H 0.0.0.0"
     restart: unless-stopped
+
+volumes:
+  pgdata:

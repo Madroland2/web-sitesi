@@ -1,12 +1,13 @@
 generator client {
   provider = "prisma-client-js"
-  // Docker imajı Alpine + OpenSSL 3 kullanıyor; varsayılan openssl-1.1.x
-  // motoru yüklenemediği için hedef açıkça belirtiliyor.
-  binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
+  // native              → geliştirenin makinesi (macOS)
+  // debian-openssl-3.0.x → yerel Docker (node:20-slim)
+  // rhel-openssl-3.0.x   → Vercel çalışma ortamı
+  binaryTargets = ["native", "debian-openssl-3.0.x", "rhel-openssl-3.0.x"]
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -20,4 +21,6 @@ model Post {
   yayinda     Boolean  @default(false)
   olusturuldu DateTime @default(now())
   guncellendi DateTime @updatedAt
+
+  @@index([yayinda, olusturuldu])
 }
