@@ -22,8 +22,8 @@ Tek bir Next.js uygulaması içinde:
 
 | Katman | Seçim |
 |--------|-------|
-| Framework | Next.js 14 App Router |
-| Veritabanı | SQLite + Prisma ORM |
+| Framework | Next.js 16 App Router |
+| Veritabanı | PostgreSQL + Prisma ORM (SQLite'tan geçildi) |
 | Auth | bcryptjs + iron-session (HTTP-only cookie) |
 | Stil | Tailwind CSS |
 | Oyunlar | HTML5 Canvas + React hooks (harici engine yok) |
