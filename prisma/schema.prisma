@@ -8,7 +8,12 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  // Uygulama çalışırken havuzlanmış (pooler) adres kullanılır — sunucusuz
+  // ortamda her istek yeni bağlantı açarsa havuz tükenir.
   url      = env("DATABASE_URL")
+  // Migration ve introspection havuzdan geçemez, doğrudan bağlantı ister.
+  // Neon bu adresi DATABASE_URL_UNPOOLED olarak verir.
+  directUrl = env("DATABASE_URL_UNPOOLED")
 }
 
 model Post {

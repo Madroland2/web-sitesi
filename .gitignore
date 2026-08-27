@@ -52,3 +52,11 @@ prisma/*.db
 
 # SQLite dönemine ait eski migration arşivi
 prisma/_migrations_sqlite_eski/
+
+# ajan araçları (npx skills add ile kurulur, kaynak koda ait değil)
+.agents/
+.claude/
+skills-lock.json
+
+# Neon CLI'nin proje/branch bağlantısı (neon link üretir)
+.neon
