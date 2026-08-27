@@ -60,3 +60,6 @@ skills-lock.json
 
 # Neon CLI'nin proje/branch bağlantısı (neon link üretir)
 .neon
+
+# üretim sırları — asla sürüm kontrolüne girmemeli
+.vercel-kurulum/
