@@ -4,6 +4,7 @@ import { getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import SilButonu from "@/components/SilButonu";
 import CikisButonu from "@/components/CikisButonu";
+import AdminMenu from "@/components/AdminMenu";
 
 export const metadata = { title: "Admin Paneli | websitesi" };
 
@@ -17,6 +18,8 @@ export default async function AdminDashboard() {
 
   return (
     <>
+      <AdminMenu />
+
       {/* Üst bar */}
       <div className="mb-6 flex items-center justify-between">
         <div>

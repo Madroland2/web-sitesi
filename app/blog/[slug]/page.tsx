@@ -2,6 +2,7 @@ import { db } from "@/lib/db";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { okumaSuresi } from "@/components/BlogCard";
+import { temizle, duzMetin } from "@/lib/icerik";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -26,7 +27,17 @@ export default async function YaziDetay({ params }: Props) {
   if (!yazi) notFound();
 
   const tarihNesnesi = new Date(yazi.olusturuldu);
-  const dakika = okumaSuresi(yazi.icerik);
+  const dakika = okumaSuresi(duzMetin(yazi.icerik));
+
+  // Editör öncesi yazılar düz metindi; etiket yoksa paragraflara bölünür.
+  const govde = /<[a-z][\s\S]*>/i.test(yazi.icerik)
+    ? temizle(yazi.icerik)
+    : yazi.icerik
+        .split(/\n{2,}/)
+        .map((p) => p.trim())
+        .filter(Boolean)
+        .map((p) => `<p>${p}</p>`)
+        .join("");
 
   return (
     <article className="mx-auto max-w-2xl pb-10">
@@ -88,15 +99,11 @@ export default async function YaziDetay({ params }: Props) {
       )}
 
       {/* ── Metin ── */}
-      <div className="okuma mx-auto mt-12">
-        {yazi.icerik
-          .split(/\n{2,}/)
-          .map((paragraf) => paragraf.trim())
-          .filter(Boolean)
-          .map((paragraf, i) => (
-            <p key={i}>{paragraf}</p>
-          ))}
-      </div>
+      {/* İçerik lib/icerik.ts içinde beyaz listeyle sanitize edilir */}
+      <div
+        className="okuma mx-auto mt-12"
+        dangerouslySetInnerHTML={{ __html: govde }}
+      />
 
       {/* ── Bitiş süslemesi ── */}
       <div className="suslu-ayirici mx-auto mt-16 max-w-[10rem]" aria-hidden="true">

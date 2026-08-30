@@ -303,3 +303,90 @@ button,
 .giris-alani::placeholder {
   color: #8b949e;
 }
+
+/* ── Yazı içine gömülen görseller ── */
+.okuma img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin-block: 1.9em;
+  border: 1px solid #3a332a;
+  border-radius: 0.6rem;
+}
+
+/* Editörden gelen hizalama sınıfları (TextAlign eklentisi style yazar) */
+.okuma [style*="text-align: center"] {
+  text-align: center;
+}
+.okuma [style*="text-align: right"] {
+  text-align: right;
+}
+/* Ortalanmış paragrafta gömme harf kayıyor, iptal */
+.okuma > p:first-of-type[style*="text-align"]::first-letter {
+  float: none;
+  font-size: inherit;
+  line-height: inherit;
+  padding-right: 0;
+  margin-top: 0;
+  color: inherit;
+  font-weight: inherit;
+}
+
+/* ── Zengin metin editörü ── */
+.editor-govde {
+  font-family: var(--font-serif);
+  font-size: 1.0625rem;
+  line-height: 1.75;
+  color: #e9e2d4;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+.editor-govde p {
+  margin-block: 0.9em;
+}
+.editor-govde h2 {
+  font-size: 1.4em;
+  margin-block: 1.1em 0.4em;
+  font-weight: 600;
+}
+.editor-govde h3 {
+  font-size: 1.18em;
+  margin-block: 1em 0.35em;
+  font-weight: 600;
+}
+.editor-govde ul,
+.editor-govde ol {
+  padding-left: 1.4em;
+  margin-block: 0.9em;
+}
+.editor-govde ul {
+  list-style: disc;
+}
+.editor-govde ol {
+  list-style: decimal;
+}
+.editor-govde blockquote {
+  margin-block: 1.1em;
+  padding-left: 1.1em;
+  border-left: 2px solid #d4a24c;
+  color: #a89e8c;
+  font-style: italic;
+}
+.editor-govde a {
+  color: #d4a24c;
+  text-decoration: underline;
+}
+.editor-govde img,
+.editor-gorsel {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin-block: 1.1em;
+  border: 1px solid #3a332a;
+  border-radius: 0.5rem;
+}
+/* Seçili görselin kenarlığı belirginleşsin */
+.editor-govde img.ProseMirror-selectednode {
+  border-color: #d4a24c;
+  box-shadow: 0 0 0 2px rgba(212, 162, 76, 0.35);
+}

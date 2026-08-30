@@ -15,9 +15,13 @@ const tarihBicimlendirici = new Intl.DateTimeFormat("tr-TR", {
   year: "numeric",
 });
 
-/** Ortalama 200 kelime/dakika üzerinden okuma süresi */
+/**
+ * Ortalama 200 kelime/dakika üzerinden okuma süresi.
+ * İçerik artık HTML olabildiği için etiketler sayıma girmeden ayıklanır.
+ */
 export function okumaSuresi(metin: string): number {
-  const kelime = metin.trim().split(/\s+/).filter(Boolean).length;
+  const sade = metin.replace(/<[^>]*>/g, " ").replace(/&nbsp;/g, " ");
+  const kelime = sade.trim().split(/\s+/).filter(Boolean).length;
   return Math.max(1, Math.round(kelime / 200));
 }
 

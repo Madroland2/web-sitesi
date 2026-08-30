@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import ZenginEditor from "./ZenginEditor";
 
 interface Yazi {
   id: number;
@@ -28,24 +29,73 @@ function slugOlustur(baslik: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
+/**
+ * Editör öncesi yazılar düz metin olarak kaydedilmişti. İçerikte hiç etiket
+ * yoksa boş satırlara göre paragraflara bölünür, böylece eski yazılar
+ * editörde tek blok halinde görünmez.
+ */
+function icerigiHazirla(ham: string): string {
+  if (/<[a-z][\s\S]*>/i.test(ham)) return ham;
+  return ham
+    .split(/\n{2,}/)
+    .map((p) => p.trim())
+    .filter(Boolean)
+    .map((p) => `<p>${p.replace(/\n/g, "<br>")}</p>`)
+    .join("");
+}
+
 export default function YaziFormu({ mod, yazi }: Props) {
   const router = useRouter();
   const [baslik, setBaslik] = useState(yazi?.baslik ?? "");
   const [slug, setSlug] = useState(yazi?.slug ?? "");
   const [ozet, setOzet] = useState(yazi?.ozet ?? "");
-  const [icerik, setIcerik] = useState(yazi?.icerik ?? "");
+  const [icerik, setIcerik] = useState(icerigiHazirla(yazi?.icerik ?? ""));
   const [kapakGorsel, setKapakGorsel] = useState(yazi?.kapakGorsel ?? "");
   const [yayinda, setYayinda] = useState(yazi?.yayinda ?? false);
   const [yukleniyor, setYukleniyor] = useState(false);
+  const [kapakYukleniyor, setKapakYukleniyor] = useState(false);
   const [hata, setHata] = useState("");
+  const kapakGirdisi = useRef<HTMLInputElement>(null);
 
   function baslikDegisti(deger: string) {
     setBaslik(deger);
     if (mod === "yeni") setSlug(slugOlustur(deger));
   }
 
+  async function kapakSecildi(e: React.ChangeEvent<HTMLInputElement>) {
+    const dosya = e.target.files?.[0];
+    e.target.value = "";
+    if (!dosya) return;
+
+    setKapakYukleniyor(true);
+    setHata("");
+    try {
+      const govde = new FormData();
+      govde.append("dosya", dosya);
+      const cevap = await fetch("/api/upload", { method: "POST", body: govde });
+      const veri = await cevap.json();
+      if (!cevap.ok) {
+        setHata(veri.hata ?? "Kapak görseli yüklenemedi.");
+        return;
+      }
+      setKapakGorsel(veri.url);
+    } catch {
+      setHata("Sunucuya ulaşılamadı.");
+    } finally {
+      setKapakYukleniyor(false);
+    }
+  }
+
   async function kaydet(e: React.FormEvent) {
     e.preventDefault();
+
+    // Editör boşken bile "<p></p>" döndürür; gerçekten metin var mı bakılır
+    const metin = icerik.replace(/<[^>]*>/g, "").trim();
+    if (!metin && !/<img/i.test(icerik)) {
+      setHata("İçerik boş olamaz.");
+      return;
+    }
+
     setYukleniyor(true);
     setHata("");
 
@@ -77,9 +127,9 @@ export default function YaziFormu({ mod, yazi }: Props) {
   }
 
   return (
-    <form onSubmit={kaydet} className="space-y-5 max-w-2xl">
+    <form onSubmit={kaydet} className="space-y-5">
       {/* Başlık */}
-      <div>
+      <div className="max-w-2xl">
         <label className="mb-1.5 block text-sm font-medium text-[#e6edf3]">Başlık *</label>
         <input
           type="text"
@@ -92,7 +142,7 @@ export default function YaziFormu({ mod, yazi }: Props) {
       </div>
 
       {/* Slug */}
-      <div>
+      <div className="max-w-2xl">
         <label className="mb-1.5 block text-sm font-medium text-[#e6edf3]">Slug *</label>
         <input
           type="text"
@@ -106,7 +156,7 @@ export default function YaziFormu({ mod, yazi }: Props) {
       </div>
 
       {/* Özet */}
-      <div>
+      <div className="max-w-2xl">
         <label className="mb-1.5 block text-sm font-medium text-[#e6edf3]">Özet *</label>
         <textarea
           className="giris-alani resize-none"
@@ -118,29 +168,57 @@ export default function YaziFormu({ mod, yazi }: Props) {
         />
       </div>
 
-      {/* İçerik */}
+      {/* İçerik — zengin metin editörü */}
       <div>
         <label className="mb-1.5 block text-sm font-medium text-[#e6edf3]">İçerik *</label>
-        <textarea
-          className="giris-alani resize-y font-mono text-sm"
-          rows={12}
-          value={icerik}
-          onChange={(e) => setIcerik(e.target.value)}
-          placeholder="Yazı içeriği (düz metin veya Markdown)"
-          required
-        />
+        <ZenginEditor deger={icerik} degisti={setIcerik} />
       </div>
 
       {/* Kapak görseli */}
-      <div>
-        <label className="mb-1.5 block text-sm font-medium text-[#e6edf3]">Kapak Görseli (URL)</label>
+      <div className="max-w-2xl">
+        <label className="mb-1.5 block text-sm font-medium text-[#e6edf3]">Kapak Görseli</label>
+        <div className="flex gap-2">
+          <input
+            type="url"
+            className="giris-alani"
+            value={kapakGorsel}
+            onChange={(e) => setKapakGorsel(e.target.value)}
+            placeholder="https://… veya sağdaki düğmeyle yükleyin"
+          />
+          <button
+            type="button"
+            onClick={() => kapakGirdisi.current?.click()}
+            disabled={kapakYukleniyor}
+            className="dugme-ikincil shrink-0 disabled:opacity-50"
+          >
+            {kapakYukleniyor ? "Yükleniyor…" : "Yükle"}
+          </button>
+        </div>
         <input
-          type="url"
-          className="giris-alani"
-          value={kapakGorsel}
-          onChange={(e) => setKapakGorsel(e.target.value)}
-          placeholder="https://example.com/gorsel.jpg"
+          ref={kapakGirdisi}
+          type="file"
+          accept="image/jpeg,image/png,image/gif,image/webp"
+          onChange={kapakSecildi}
+          className="hidden"
         />
+
+        {kapakGorsel && (
+          <div className="mt-3">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={kapakGorsel}
+              alt="Kapak önizlemesi"
+              className="max-h-44 rounded-lg border border-[#3a332a] object-cover"
+            />
+            <button
+              type="button"
+              onClick={() => setKapakGorsel("")}
+              className="mt-2 text-xs text-[#f85149] hover:underline"
+            >
+              Kapağı kaldır
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Yayın durumu */}
@@ -158,7 +236,7 @@ export default function YaziFormu({ mod, yazi }: Props) {
       </div>
 
       {hata && (
-        <p className="rounded-lg border border-[#f85149]/30 bg-[#f85149]/10 px-3 py-2 text-sm text-[#f85149]">
+        <p className="max-w-2xl rounded-lg border border-[#f85149]/30 bg-[#f85149]/10 px-3 py-2 text-sm text-[#f85149]">
           {hata}
         </p>
       )}

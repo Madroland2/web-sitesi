@@ -3,6 +3,9 @@ import { Geist, Geist_Mono, Lora } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import SolPanel from "@/components/SolPanel";
+import SagPanel from "@/components/SagPanel";
+import SayfaDuzeni from "@/components/SayfaDuzeni";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,6 +36,20 @@ export const viewport: Viewport = {
   colorScheme: "dark",
 };
 
+/**
+ * Her sayfa isteğinde yeniden render edilir.
+ *
+ * Gerekli, çünkü sol panel kök düzende duruyor ve her sayfada veritabanından
+ * duyuru/görsel okuyor. Varsayılan davranışta Next.js bu sayfaları derleme
+ * anında dondurur; o zaman admin panelinden eklenen içerik siteye yansımaz,
+ * yeni dağıtım yapılana kadar eski hâli görünür.
+ *
+ * Bedeli: oyun sayfaları da statik servis edilemez. Trafik düşük olduğu için
+ * kabul edilebilir; ileride sorun olursa sol panel düzenden çıkarılıp yalnız
+ * ilgili sayfalara taşınabilir.
+ */
+export const dynamic = "force-dynamic";
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
@@ -44,12 +61,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           İçeriğe atla
         </a>
         <Header />
-        <main
-          id="icerik"
-          className="mx-auto w-full max-w-5xl flex-1 px-4 py-8"
-        >
+        {/* Yan paneller sunucuda hazırlanır, gösterim kararı SayfaDuzeni'nde */}
+        <SayfaDuzeni sol={<SolPanel />} sag={<SagPanel />}>
           {children}
-        </main>
+        </SayfaDuzeni>
         <Footer />
       </body>
     </html>

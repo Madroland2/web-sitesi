@@ -21,6 +21,7 @@ model Post {
   baslik      String
   slug        String   @unique
   ozet        String
+  /// Zengin metin editöründen gelen HTML. Gösterilmeden önce sanitize edilir.
   icerik      String
   kapakGorsel String?
   yayinda     Boolean  @default(false)
@@ -28,4 +29,36 @@ model Post {
   guncellendi DateTime @updatedAt
 
   @@index([yayinda, olusturuldu])
+}
+
+/// Sol paneldeki duyuru listesi
+model Duyuru {
+  id          Int      @id @default(autoincrement())
+  baslik      String
+  /// Düz metin — duyurular kısa tutulduğu için editör kullanılmıyor
+  icerik      String
+  /// Boşsa duyuru yalnızca metin olarak görünür
+  baglanti    String?
+  yayinda     Boolean  @default(true)
+  olusturuldu DateTime @default(now())
+  guncellendi DateTime @updatedAt
+
+  @@index([yayinda, olusturuldu])
+}
+
+/// Görseller galerisi
+model Gorsel {
+  id          Int      @id @default(autoincrement())
+  baslik      String
+  /// Vercel Blob üzerindeki dosyanın genel adresi
+  url         String
+  /// Ekran okuyucular için açıklama
+  altMetin    String?
+  yayinda     Boolean  @default(true)
+  /// Küçükten büyüğe sıralanır; eşitse tarihe göre
+  sira        Int      @default(0)
+  olusturuldu DateTime @default(now())
+  guncellendi DateTime @updatedAt
+
+  @@index([yayinda, sira])
 }
