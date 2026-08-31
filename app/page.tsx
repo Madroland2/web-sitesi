@@ -22,12 +22,11 @@ export default async function AnaSayfa() {
         <p className="meta-etiket">Edebiyat Defteri</p>
 
         <h1 className="dergi-basligi mt-3 text-4xl text-[#e9e2d4] sm:text-5xl">
-          Okuduklarım, düşündüklerim
+          SONDÜŞ
         </h1>
 
         <p className="mx-auto mt-4 max-w-md text-[15px] leading-relaxed text-[#a89e8c]">
-          Kitaplar üzerine notlar, yarım kalmış cümleler ve arada bir
-          tamamlanmış bir fikir.
+          Sessiz gece bin bataklık, kaygan düşler hep tuzaklı
         </p>
 
         <div className="suslu-ayirici mx-auto mt-8 max-w-xs" aria-hidden="true">
