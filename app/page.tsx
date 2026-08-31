@@ -19,9 +19,7 @@ export default async function AnaSayfa() {
     <>
       {/* ── Dergi başlığı ── */}
       <header className="mb-14 pt-6 text-center">
-        <p className="meta-etiket">Edebiyat Defteri</p>
-
-        <h1 className="dergi-basligi mt-3 text-4xl text-[#e9e2d4] sm:text-5xl">
+        <h1 className="dergi-basligi text-4xl text-[#e9e2d4] sm:text-5xl">
           SONDÜŞ
         </h1>
 
