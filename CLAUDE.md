@@ -1,20 +1,38 @@
-# Proje: Blog + 3 Oyunlu Web Sitesi
+# Proje: SONDÜŞ — Edebiyat Blogu + 3 Oyun
 
-Bu dosya, Claude Code'un tokenı bitip konuşma kesildiğinde **kaldığın yerden devam etmek** için
-yazılmıştır. Yeni bir konuşmada sadece şunu söyle:
+Bu dosya, konuşma kesildiğinde **kaldığın yerden devam etmek** için yazıldı.
+Yeni bir konuşmada şunu söylemek yeterli:
 
 > "web-sitesi projesine devam et, CLAUDE.md'yi oku"
 
+**Bu depo herkese açıktır.** Buraya parola, token veya bağlantı dizesi yazma;
+gerçek değerler aşağıda adı geçen git-ignore'lu dosyalardadır.
+
+Son güncelleme: 2026-09-01
+
 ---
 
-## Projenin Özeti
+## Nerede yayında
 
-Tek bir Next.js uygulaması içinde:
-1. **Blog + Anasayfa** — yazı listesi, detay sayfası
-2. **Admin Paneli** (`/admin`) — şifreli giriş, yazı ekle/düzenle/sil
-3. **Oyun 1 — Buğulu Ayna XOX** — Canvas'ta buğu efektli tic-tac-toe
-4. **Oyun 2 — Deniz Feneri ve Gemi** — kaçınma/navigasyon oyunu, 3 seviye
-5. **Oyun 3 — Yasaklı Kelime Avı** — kitap arka kapağında yasaklı kelime var mı?
+| Ne | Nerede |
+|----|--------|
+| Site | https://web-sitesi-sage.vercel.app |
+| Kod | https://github.com/Madroland2/web-sitesi (public) |
+| Barındırma | Vercel — `web-sitesi/web-sitesi`, GitHub'a bağlı, her push'ta otomatik dağıtım |
+| Veritabanı | Neon Postgres, proje `red-butterfly-84043070`, branch `production`, bölge **eu-central-1** |
+| Dosya deposu | Vercel Blob, store `web-sitesi-gorseller` (public erişim) |
+
+Dikkat: Neon hesabında **aynı adla ikinci bir proje** var
+(`nameless-cell-50869289`, us-east-2). Kullanılan o değil, yukarıdaki.
+
+### Gizli değerler nerede (hiçbiri depoda değil)
+
+| Dosya | İçerik |
+|-------|--------|
+| `.env` | Neon'dan `neon link` ile çekilen 5 değişken |
+| `.env.local` | `SESSION_SECRET`, `ADMIN_PASSWORD_HASH`, `BLOB_READ_WRITE_TOKEN` |
+| `.vercel-kurulum/URETIM-DEGERLERI.txt` | Üretim değişkenleri + yönetici parolası |
+| `~/.neon-key` | Neon API anahtarı (CLI bunu kullanıyor) |
 
 ---
 
@@ -23,151 +41,130 @@ Tek bir Next.js uygulaması içinde:
 | Katman | Seçim |
 |--------|-------|
 | Framework | Next.js 16 App Router |
-| Veritabanı | PostgreSQL + Prisma ORM (SQLite'tan geçildi) |
+| Veritabanı | PostgreSQL (Neon) + Prisma 5 |
 | Auth | bcryptjs + iron-session (HTTP-only cookie) |
-| Stil | Tailwind CSS |
-| Oyunlar | HTML5 Canvas + React hooks (harici engine yok) |
+| Stil | Tailwind CSS v4 (CSS-first `@theme`, config dosyası yok) |
+| Editör | Tiptap — içerik HTML olarak saklanıyor |
+| Sanitize | isomorphic-dompurify (`lib/icerik.ts`) |
+| Görsel | Vercel Blob (`@vercel/blob`) |
+| Oyunlar | HTML5 Canvas + React hooks |
 
-### Renk Paleti
-```
-Arkaplan  : #0d1117
-Yüzey     : #161b22
-Kenarlık  : #30363d
-Vurgu     : #58a6ff
-Hata/Kırmızı : #f85149
-Başarı/Yeşil : #3fb950
-Metin Ana : #e6edf3
-Metin İkil: #8b949e
-```
+### Renk paleti
 
-### Güvenlik Notları
-- Admin şifresi `.env.local`'de bcrypt hash olarak (`ADMIN_PASSWORD_HASH`)
-- iron-session → AES-256 şifrelenmiş HTTP-only cookie
-- `middleware.ts` → `/admin/**` her isteği doğrular
-- Prisma → SQL injection riski yok
-
----
-
-## Dosya Yapısı (hedef)
+Arayüz mavi tonlarında, edebiyat bölümü sıcak mürekkep tonlarında — ikisi
+`app/globals.css` içindeki `@theme` blokunda tanımlı.
 
 ```
-web-sitesi/
-├── app/
-│   ├── layout.tsx                  # Root layout (Header + Footer)
-│   ├── globals.css
-│   ├── page.tsx                    # Anasayfa — blog listesi
-│   ├── blog/[slug]/page.tsx        # Blog detay
-│   ├── oyunlar/
-│   │   ├── page.tsx                # Oyunlar listesi
-│   │   ├── xox/page.tsx
-│   │   ├── fener/page.tsx
-│   │   └── kelime/page.tsx
-│   ├── admin/
-│   │   ├── page.tsx                # Giriş formu
-│   │   ├── dashboard/page.tsx
-│   │   ├── yeni/page.tsx
-│   │   └── duzenle/[id]/page.tsx
-│   └── api/
-│       ├── auth/login/route.ts
-│       ├── auth/logout/route.ts
-│       └── posts/
-│           ├── route.ts            # GET liste, POST yeni
-│           └── [id]/route.ts       # PUT güncelle, DELETE sil
-├── components/
-│   ├── Header.tsx
-│   ├── Footer.tsx
-│   ├── BlogCard.tsx
-│   ├── AdminGuard.tsx
-│   └── games/
-│       ├── XoxCanvas.tsx
-│       ├── FenerCanvas.tsx
-│       └── KelimeOyunu.tsx
-├── lib/
-│   ├── db.ts                       # Prisma client singleton
-│   ├── auth.ts                     # iron-session config
-│   └── oyun-verisi.ts              # 20 kelime + 50 metin (statik)
-├── prisma/
-│   ├── schema.prisma
-│   └── seed.ts
-├── middleware.ts                   # Route koruması
-├── .env.local                      # SESSION_SECRET, ADMIN_PASSWORD_HASH
-└── README.md
+Arayüz : bg #0d1117 · yüzey #161b22 · kenarlık #30363d · vurgu #58a6ff
+Edebiyat: metin #e9e2d4 · ikincil #a89e8c · yaldız #d4a24c · çizgi #3a332a
 ```
 
 ---
 
-## Aşama Planı ve İlerleme Durumu
+## Veri modeli (`prisma/schema.prisma`)
 
-### ✅ = Tamamlandı | 🔄 = Devam ediyor | ⬜ = Başlanmadı
+- **Post** — `baslik, slug, ozet, icerik (HTML), kapakGorsel, yayinda`
+- **Duyuru** — `baslik, icerik (düz metin), baglanti, yayinda`
+- **Gorsel** — `baslik, url (Blob), altMetin, sira, yayinda`
 
-| # | Aşama | Durum | Notlar |
-|---|-------|-------|--------|
-| 1 | **İskelet + Tasarım** | ✅ | Next.js 16 + Prisma 5 + Tailwind v4 + Header/Footer |
-| 2 | **Blog + Admin** | ✅ | Prisma SQLite, CRUD API, blog UI, admin paneli, auth |
-| 3 | **Oyun 3 — Kelime Avı** | ✅ | 20 yasaklı kelime, 50 kitap metni, 8s sayaç, vurgulu geri bildirim |
-| 4 | **Oyun 1 — Buğulu XOX** | ✅ | Canvas fog reveal, hover ghost, kazanan çizgisi, Web Audio, 2 oyunculu |
-| 5 | **Oyun 2 — Deniz Feneri** | ⬜ | Canvas harita, gemi, fener, 3 seviye |
-| 6 | **Cila + README** | ⬜ | Mobil test, hata, dokümantasyon |
+`datasource` iki adres kullanır: `url` havuzlanmış (uygulama),
+`directUrl` havuzlanmamış (migration). Neon'da bu şart.
 
 ---
 
-## Önemli Teknik Notlar
+## Sayfa düzeni
 
-- **Prisma**: v7 yerine v5 kullanılıyor (v7 SQLite için adapter zorunlu kıldı, gereksiz karmaşık)
-- **Prisma import**: `@prisma/client` (klasik generator, `node_modules` içinde)
-- **Next.js 16 + Tailwind v4**: CSS-first config (`@theme` bloku), `tailwind.config.ts` yok
-- **proxy.ts**: Next.js 16'da `middleware.ts` → `proxy.ts` oldu (admin route koruması)
-- **`npm run dev` ve `build`**: `--webpack` flag zorunlu (WASM binding sorunu)
-- **Varsayılan admin şifresi**: `admin123` (.env.local'de ADMIN_PASSWORD_HASH)
+Kök düzen üç sütun (`components/SayfaDuzeni.tsx`):
 
-## Kurulum Adımları (her şey sıfırdan)
+```
+SOL PANEL           ORTA            SAĞ
+Duyurular (son 3)   içerik          Instagram
+Görseller (son 4)                   Kitapyurdu
+Oyunlar
+```
+
+- Yan paneller sunucuda render edilip prop olarak geçer; `/admin` altında gizlenir.
+- Mobilde sol panel içeriğin altına iner.
+- **Sağ paneldeki adresler `lib/baglantilar.ts` içinde boş** — adres verilmeyen
+  simge hiç gösterilmiyor. Kullanıcıdan Instagram ve Kitapyurdu adresleri bekleniyor.
+
+---
+
+## Aşama durumu
+
+| # | Aşama | Durum |
+|---|-------|-------|
+| 1 | İskelet + tasarım | ✅ |
+| 2 | Blog + admin + auth | ✅ |
+| 3 | Oyun — Yasaklı Kelime Avı | ✅ |
+| 4 | Oyun — Buğulu Ayna XOX | ✅ |
+| 5 | **Oyun — Deniz Feneri** | ⬜ `app/oyunlar/fener/page.tsx` yer tutucu ("Oyun hazırlanıyor…"), `FenerCanvas.tsx` yok |
+| 6 | Yayına alma (GitHub + Vercel + Neon) | ✅ |
+| 7 | Yan paneller + duyuru/galeri + editör + görsel yükleme | ✅ |
+| 8 | Cila, mobil test | ⬜ |
+
+---
+
+## Açık işler
+
+1. **Deniz Feneri oyunu** — tek gerçek eksik özellik.
+2. **Instagram / Kitapyurdu adresleri** — `lib/baglantilar.ts`, kullanıcı verecek.
+3. **Blog boş** — `prisma/seed.mjs` hazır, üretimde hiç çalıştırılmadı.
+4. **Site adı tutarsız** — anasayfa "SONDÜŞ" diyor ama header logosu ve
+   `<title>` hâlâ "websitesi". Kullanıcı sadece anasayfayı istemişti.
+5. **Lint hataları** — `components/games/XoxCanvas.tsx` ve `KelimeOyunu.tsx`
+   içinde 5 hata (effect içinde setState, immutability). Eskiden beri var.
+6. **Yerel derleyici bozuk** — `@next/swc-darwin-arm64` yüklenemiyor, Next.js
+   yavaş WASM yedeğine düşüyor. Üretimi etkilemiyor; `npm rebuild` ile düzelir.
+
+---
+
+## Bilinmesi gereken kararlar
+
+- **`export const dynamic = "force-dynamic"` kök düzende.** Zorunlu: sol panel
+  her sayfada veritabanı okuyor, yoksa Next.js sayfaları derleme anında
+  donduruyor ve admin'den eklenen içerik siteye yansımıyordu. Bedeli: oyun
+  sayfaları da statik servis edilmiyor.
+- **İçerik HTML, sanitize ediliyor.** Yazan yalnız admin ama yapıştırılan
+  metinle script taşınabilir ve veritabanına giren HTML her ziyaretçide çalışır.
+  Beyaz liste `lib/icerik.ts` içinde.
+- **Yükleme türü baytlardan doğrulanıyor** (`app/api/upload/route.ts`), tarayıcının
+  bildirdiği MIME'a güvenilmiyor. 8 MB sınır, JPEG/PNG/GIF/WEBP.
+- **Eski düz metin yazılar** hem editörde hem gösterimde paragraflara bölünür —
+  içerikte etiket yoksa `\n\n` ile ayrılır.
+- **Prisma 5**, v7 değil (v7 gereksiz adapter zorunluluğu getirdi).
+- **`proxy.ts`** — Next.js 16'da `middleware.ts` bu ada dönüştü, `/admin` korumalı.
+- **`--webpack` flag'i** `dev` ve `build` betiklerinde zorunlu.
+
+---
+
+## Sık kullanılan komutlar
 
 ```bash
 cd /Users/kadir/web-sitesi
 
-# 1. Bağımlılıkları yükle
-npm install
+npm run dev                  # yerel geliştirme (Docker'sız)
+docker compose up -d         # yerel Postgres ile birlikte
+npm run build                # derleme
+npx tsc --noEmit             # tip kontrolü (lint'ten daha temiz sinyal)
 
-# 2. Prisma veritabanını oluştur
-npx prisma migrate dev --name init
+npx prisma migrate dev --name <ad>   # şema değişikliği (Neon'a gider!)
+npx prisma studio                    # veriyi gözle
 
-# 3. .env.local dosyasını oluştur (örnek aşağıda)
-# SESSION_SECRET=<en az 32 karakter rastgele string>
-# ADMIN_PASSWORD_HASH=<bcryptjs ile üretilmiş hash>
-
-# 4. Geliştirme sunucusunu başlat
-npm run dev
+vercel deploy --prod --yes   # elle dağıtım (push zaten tetikliyor)
+vercel env ls                # üretim değişkenleri
 ```
+
+Neon CLI için: `export NEON_API_KEY=$(cat ~/.neon-key)` sonra `npx neon@latest …`
+
+**Uyarı:** `.env` içindeki `DATABASE_URL` üretim veritabanını gösteriyor. Host'tan
+çalıştırılan Prisma komutları doğrudan **canlı veriye** dokunur. Docker ile
+çalışırken compose kendi yerel Postgres'ini dayattığı için uygulama etkilenmez.
 
 ---
 
-## Devam Etme Talimatı (yeni konuşma için)
+## Oyun veri notları
 
-Yeni bir Claude Code konuşmasında şunu söyle:
-
-```
-/Users/kadir/web-sitesi klasöründeki projeye devam et.
-CLAUDE.md dosyasını oku, hangi aşamada kaldığımıza bak
-ve bir sonraki tamamlanmamış aşamadan başla.
-```
-
-Claude, CLAUDE.md'deki aşama tablosuna bakarak hangi aşamanın `⬜` olduğunu görecek
-ve oradan devam edecek. Her aşama bittiğinde bu dosyadaki tabloyu `✅` olarak güncelleyecek.
-
----
-
-## Oyun Veri Notları
-
-- **Oyun 3 verisi** (`lib/oyun-verisi.ts`): 20 yasaklı kelime + 50 Türkçe kitap arka kapağı metni.
-  Metinlerin ~%50'sinde yasaklı kelime var, ~%50'sinde yok. Hepsi statik veri, DB'ye gitmiyor.
-- **Oyun 2 seviyeleri**: Seviye 1 (yavaş fener, az kara), Seviye 2 (orta), Seviye 3 (hızlı fener, çok kara).
-- **Oyun 1**: 2 oyunculu yerel mod, kazanma/beraberlik kontrolü, Canvas üzerinde buğu katmanı.
-
----
-
-## Önemli Kararlar ve Gerekçeler
-
-1. **Tek admin kullanıcısı**: `User` tablosu yok, şifre `.env.local`'de hash olarak.
-2. **Blog görseli URL ile**: Sunucu tarafı dosya yükleme yok (basitlik için).
-3. **Blog içeriği Markdown**: Düz textarea, WYSIWYG editör eklenmedi.
-4. **Ses efektleri Web Audio API**: Harici ses dosyası gerekmez.
+- `lib/oyun-verisi.ts` — 20 yasaklı kelime + 50 Türkçe arka kapak metni, statik.
+- XOX: 2 oyunculu yerel mod, Canvas buğu katmanı, Web Audio ile ses.
+- Fener (yapılacak): Canvas harita, gemi, dönen fener ışığı, 3 seviye.
